@@ -32,7 +32,4 @@ Buffer.prototype.toString = (encoding, start, end) ->
                 i += 2
             result
         else _toString.apply this, arguments
-        
-#console.log (new Buffer ['0xff', '0xfe', '0x6a', '0x0', '0x6f', '0x0', '0x61', '0x0', '0x6f', '0x0']).toString('utf16')
-#console.log (new Buffer ['0xfe', '0xff', '0x0', '0x6a', '0x0', '0x6f', '0x0', '0x61', '0x0', '0x6f']).toString('utf16')
 
