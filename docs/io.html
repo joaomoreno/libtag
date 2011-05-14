@@ -1,0 +1,30 @@
+<!DOCTYPE html>  <html> <head>   <title>io.coffee</title>   <meta http-equiv="content-type" content="text/html; charset=UTF-8">   <link rel="stylesheet" media="all" href="docco.css" /> </head> <body>   <div id="container">     <div id="background"></div>            <div id="jump_to">         Jump To &hellip;         <div id="jump_wrapper">           <div id="jump_page">                                           <a class="source" href="buffer.html">                 buffer.coffee               </a>                                           <a class="source" href="id3.html">                 id3.coffee               </a>                                           <a class="source" href="io.html">                 io.coffee               </a>                        </div>         </div>       </div>          <table cellpadding="0" cellspacing="0">       <thead>         <tr>           <th class="docs">             <h1>               io.coffee             </h1>           </th>           <th class="code">           </th>         </tr>       </thead>       <tbody>                               <tr id="section-1">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-1">&#182;</a>               </div>                            </td>             <td class="code">               <div class="highlight"><pre><span class="nv">fs = </span><span class="nx">require</span> <span class="s1">&#39;fs&#39;</span>
+
+<span class="nv">exactlyMaximumAttempts = </span><span class="mi">10</span>
+
+<span class="nv">readExactly = </span><span class="nf">(fd, buffer, offset, length, position, callback) -&gt;</span>
+    <span class="nv">totalLength = </span><span class="nx">length</span>
+    <span class="nv">totalBytesRead = </span><span class="mi">0</span>
+    <span class="nv">attempts = </span><span class="mi">0</span>
+    <span class="nv">recursive = </span><span class="nf">(err, bytesRead) -&gt;</span>
+        <span class="k">if</span> <span class="nx">err</span> <span class="k">then</span> <span class="k">return</span> <span class="nx">callback</span> <span class="nx">err</span><span class="p">,</span> <span class="nx">totalBytesRead</span>
+        <span class="nx">totalBytesRead</span> <span class="o">+=</span> <span class="nx">bytesRead</span>
+        <span class="k">if</span> <span class="nx">bytesRead</span> <span class="o">==</span> <span class="mi">0</span> <span class="k">then</span> <span class="nx">attempts</span> <span class="o">+=</span> <span class="mi">1</span> <span class="k">else</span> <span class="nv">attempts = </span><span class="mi">0</span>
+        <span class="k">if</span> <span class="nx">attempts</span> <span class="o">&gt;</span> <span class="nx">exactlyMaximumAttempts</span>
+            <span class="k">return</span> <span class="nx">callback</span> <span class="s1">&#39;Reached maximum read attempts&#39;</span><span class="p">,</span> <span class="nx">totalBytesRead</span>
+        <span class="k">if</span> <span class="nx">totalBytesRead</span> <span class="o">&lt;</span> <span class="nx">totalLength</span>
+            <span class="nx">readExactly</span> <span class="nx">fd</span><span class="p">,</span> <span class="nx">buffer</span><span class="p">,</span> <span class="nx">totalBytesRead</span><span class="p">,</span> <span class="nx">totalLength</span> <span class="o">-</span> <span class="nx">totalBytesRead</span><span class="p">,</span> <span class="kc">null</span><span class="p">,</span> <span class="nx">recursive</span>
+        <span class="k">else</span>
+            <span class="nx">callback</span> <span class="kc">null</span><span class="p">,</span> <span class="nx">totalBytesRead</span>
+    <span class="nx">fs</span><span class="p">.</span><span class="nx">read</span> <span class="nx">fd</span><span class="p">,</span> <span class="nx">buffer</span><span class="p">,</span> <span class="nx">offset</span><span class="p">,</span> <span class="nx">length</span><span class="p">,</span> <span class="nx">position</span><span class="p">,</span> <span class="nx">recursive</span>
+
+<span class="nv">readExactlyToBuffer = </span><span class="nf">(fd, position, length, callback) -&gt;</span>
+    <span class="nv">buffer = </span><span class="k">new</span> <span class="nx">Buffer</span> <span class="nx">length</span>
+    <span class="nx">readExactly</span> <span class="nx">fd</span><span class="p">,</span> <span class="nx">buffer</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="nx">length</span><span class="p">,</span> <span class="nx">position</span><span class="p">,</span> <span class="nf">(err, bytesRead) -&gt;</span>
+        <span class="k">if</span> <span class="nx">err</span> <span class="k">then</span> <span class="k">return</span> <span class="nx">callback</span> <span class="nx">err</span>
+        <span class="nx">callback</span> <span class="kc">null</span><span class="p">,</span> <span class="nx">buffer</span>
+
+<span class="nv">exports.readExactly = </span><span class="nx">readExactly</span>
+<span class="nv">exports.readExactlyToBuffer = </span><span class="nx">readExactlyToBuffer</span>
+
+</pre></div>             </td>           </tr>                </tbody>     </table>   </div> </body> </html> 

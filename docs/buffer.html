@@ -1,0 +1,36 @@
+<!DOCTYPE html>  <html> <head>   <title>buffer.coffee</title>   <meta http-equiv="content-type" content="text/html; charset=UTF-8">   <link rel="stylesheet" media="all" href="docco.css" /> </head> <body>   <div id="container">     <div id="background"></div>            <div id="jump_to">         Jump To &hellip;         <div id="jump_wrapper">           <div id="jump_page">                                           <a class="source" href="buffer.html">                 buffer.coffee               </a>                                           <a class="source" href="id3.html">                 id3.coffee               </a>                                           <a class="source" href="io.html">                 io.coffee               </a>                        </div>         </div>       </div>          <table cellpadding="0" cellspacing="0">       <thead>         <tr>           <th class="docs">             <h1>               buffer.coffee             </h1>           </th>           <th class="code">           </th>         </tr>       </thead>       <tbody>                               <tr id="section-1">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-1">&#182;</a>               </div>                            </td>             <td class="code">               <div class="highlight"><pre><span class="nv">power2To8 = </span><span class="nb">Math</span><span class="p">.</span><span class="nx">pow</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span><span class="mi">8</span><span class="p">)</span>
+
+<span class="nv">Buffer.prototype.toInt = </span><span class="nf">(start, length, bom) -&gt;</span>
+    <span class="nv">sum = </span><span class="mi">0</span>
+    <span class="nv">factor = </span><span class="mi">1</span>
+    <span class="nv">indexes = </span><span class="k">if</span> <span class="nx">bom</span> <span class="o">is</span> <span class="s1">&#39;little&#39;</span> <span class="k">then</span> <span class="p">[</span><span class="nx">start</span><span class="p">..</span><span class="nx">start</span> <span class="o">+</span> <span class="nx">length</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="k">else</span> <span class="p">[</span><span class="nx">start</span> <span class="o">+</span> <span class="nx">length</span> <span class="o">-</span> <span class="mi">1</span><span class="p">..</span><span class="nx">start</span><span class="p">]</span>
+    <span class="k">for</span> <span class="nx">i</span> <span class="k">in</span> <span class="nx">indexes</span>
+        <span class="nx">sum</span> <span class="o">+=</span> <span class="k">this</span><span class="p">[</span><span class="nx">i</span><span class="p">]</span> <span class="o">*</span> <span class="nx">factor</span>
+        <span class="nx">factor</span> <span class="o">*=</span> <span class="nx">power2To8</span>
+    <span class="nx">sum</span>
+
+<span class="nv">getBOM = </span><span class="nf">(buffer) -&gt;</span>
+    <span class="k">switch</span> <span class="nx">buffer</span><span class="p">.</span><span class="nx">toInt</span> <span class="mi">0</span><span class="p">,</span> <span class="mi">2</span>
+        <span class="k">when</span> <span class="mh">0xfeff</span> <span class="k">then</span> <span class="s1">&#39;big&#39;</span>
+        <span class="k">when</span> <span class="mh">0xfffe</span> <span class="k">then</span> <span class="s1">&#39;little&#39;</span>
+        <span class="k">else</span> <span class="kc">undefined</span>
+
+<span class="nv">_toString = </span><span class="nx">Buffer</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">toString</span>
+<span class="nv">Buffer.prototype.toString = </span><span class="nf">(encoding, start, end) -&gt;</span>
+    <span class="k">switch</span> <span class="nx">encoding</span>
+        <span class="k">when</span> <span class="s1">&#39;utf16&#39;</span>
+            <span class="nv">result = </span><span class="s1">&#39;&#39;</span>
+            <span class="nv">i = </span><span class="nx">start</span> <span class="o">or</span> <span class="mi">0</span>
+            <span class="nv">end = </span><span class="nx">end</span> <span class="o">or</span> <span class="k">this</span><span class="p">.</span><span class="nx">length</span>
+            <span class="k">if</span> <span class="nv">bom = </span><span class="nx">getBOM</span> <span class="k">this</span><span class="p">,</span> <span class="nx">i</span> <span class="k">then</span> <span class="nx">i</span> <span class="o">+=</span> <span class="mi">2</span> <span class="k">else</span> <span class="nv">bom = </span><span class="s1">&#39;big&#39;</span>
+            <span class="k">while</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">end</span>
+                <span class="nv">word = </span><span class="k">this</span><span class="p">.</span><span class="nx">toInt</span> <span class="nx">i</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="nx">bom</span>
+                <span class="k">if</span> <span class="mh">0x0000</span> <span class="o">&lt;=</span> <span class="nx">word</span> <span class="o">&lt;=</span> <span class="mh">0xd7ff</span> <span class="o">or</span> <span class="mh">0xe000</span> <span class="o">&lt;=</span> <span class="nx">word</span> <span class="o">&lt;=</span> <span class="mh">0xffff</span>
+                    <span class="nx">result</span> <span class="o">+=</span> <span class="nb">String</span><span class="p">.</span><span class="nx">fromCharCode</span> <span class="nx">word</span>
+                <span class="k">else</span> <span class="k">if</span> <span class="mh">0x10000</span> <span class="o">&lt;=</span> <span class="nx">word</span> <span class="o">&lt;=</span> <span class="mh">0x10ffff</span>
+                    <span class="k">throw</span> <span class="s1">&#39;Unsupported&#39;</span>
+                <span class="nx">i</span> <span class="o">+=</span> <span class="mi">2</span>
+            <span class="nx">result</span>
+        <span class="k">else</span> <span class="nx">_toString</span><span class="p">.</span><span class="nx">apply</span> <span class="k">this</span><span class="p">,</span> <span class="nx">arguments</span>
+        </pre></div>             </td>           </tr>                               <tr id="section-2">             <td class="docs">               <div class="pilwrap">                 <a class="pilcrow" href="#section-2">&#182;</a>               </div>               <p>console.log (new Buffer ['0xff', '0xfe', '0x6a', '0x0', '0x6f', '0x0', '0x61', '0x0', '0x6f', '0x0']).toString('utf16')
+console.log (new Buffer ['0xfe', '0xff', '0x0', '0x6a', '0x0', '0x6f', '0x0', '0x61', '0x0', '0x6f']).toString('utf16')</p>             </td>             <td class="code">               <div class="highlight"><pre></pre></div>             </td>           </tr>                </tbody>     </table>   </div> </body> </html> 
