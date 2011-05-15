@@ -5,6 +5,7 @@ return console.log 'Usage: coffee readTag.coffee audio-file' unless process.argv
 count = 2
 callback = (err, tag) ->
     if err
+        console.log err.stack
         console.log 'ERR', process.argv[count]
     else
         console.log tag.get('artist'), tag.get('title')
