@@ -93,8 +93,10 @@ parseFrame = (tag, buffer, start) ->
         flags: parseFrameFlags buffer, start
     start += 10
     if frame.id[0] is 'T'
-        frame.encoding = if buffer[start] == 0 then 'ISO-8859-1' else 'UTF16'
-        frame.content = buffer[start + 1 .. start + frame.size - 1].toString(if frame.encoding == 'UTF16' then 'utf16' else 'utf8')
+        frame.encoding = if buffer[start] == 0 then 'iso-8859-1' else 'utf16'
+        buffer = buffer[start + 1 .. start + frame.size - 1]
+        decoding = if frame.encoding is 'utf16' then 'utf16' else 'utf8'
+        frame.content = buffer.toString(decoding)
     frame
 
 parseFrames = (tag, buffer) ->
