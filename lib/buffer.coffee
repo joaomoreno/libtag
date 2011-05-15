@@ -24,7 +24,6 @@ Buffer.prototype.toString = (encoding, start, end) ->
             words = []
             i = start or 0
             if this[end - 1] is 0 then end--
-            console.log this[end]
             if bom = getBOM this, i then i += 2 else bom = 'big'
             while i < end
                 word = this.toInt i, 2, bom
