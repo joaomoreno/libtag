@@ -19,17 +19,18 @@ _toString = Buffer.prototype.toString
 Buffer.prototype.toString = (encoding, start, end) ->
     switch encoding
         when 'utf16'
-            result = ''
+            words = []
             i = start or 0
             end = end or this.length
             if bom = getBOM this, i then i += 2 else bom = 'big'
             while i < end
                 word = this.toInt i, 2, bom
                 if 0x0000 <= word <= 0xd7ff or 0xe000 <= word <= 0xffff
-                    result += String.fromCharCode word
+                    words.push word
                 else if 0x10000 <= word <= 0x10ffff
-                    throw 'Unsupported'
+                    word -= 0x10000
+                    words.push 0xd800 + (word >> 10), 0xdc00 + (word & 0x3ff)
                 i += 2
-            result
+            String.fromCharCode.apply null, words
         else _toString.apply this, arguments
 
