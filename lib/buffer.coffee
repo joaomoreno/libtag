@@ -23,7 +23,7 @@ Buffer.prototype.toString = (encoding, start, end) ->
         when 'utf16'
             words = []
             i = start or 0
-            if this[end - 1] is 0 then end--
+            while this[end - 1] is 0 then end--
             if bom = getBOM this, i then i += 2 else bom = 'big'
             while i < end
                 word = this.toInt i, 2, bom
@@ -35,7 +35,7 @@ Buffer.prototype.toString = (encoding, start, end) ->
                 i += 2
             String.fromCharCode.apply null, words
         when 'utf8'
-            if this[end - 1] is 0 then end--
+            while this[end - 1] is 0 then end--
             _toString.apply this, [encoding, start, end]
         else _toString.apply this, arguments
 
