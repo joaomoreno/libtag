@@ -8,10 +8,10 @@ id3 = require './id3'
 # and return it in the form of `callback(err, tag)`.
 exports.readTag = (path, callback) ->
     fs.open path, 'r+', (err, fd) ->
-        if err then return callback err
+        if err then return error fd, callback, err
         id3.detectTag fd, (err, parser) ->
-            if err then return callback err
-            if not parser then return callback 'Not ID3 file'
+            if err then return error fd, callback, err
+            if not parser then return error fd, callback, 'Not ID3 file'
             parser.readTag fd, (err, tag) ->
                 return if err then error fd, callback, err else success fd, callback, tag
 
