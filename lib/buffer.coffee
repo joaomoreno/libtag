@@ -1,12 +1,12 @@
 
 Buffer.prototype.toInt = (start, length, bom, bits) ->
     power = if bits then Math.pow(2, bits) else Math.pow(2, 8)
-    
+    matchingBits = power - 1
     sum = 0
     factor = 1
     indexes = if bom is 'little' then [start..start + length - 1] else [start + length - 1..start]
     for i in indexes
-        sum += this[i] * factor
+        sum += (this[i] & matchingBits) * factor
         factor *= power
     sum
 

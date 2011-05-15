@@ -48,7 +48,7 @@ class ID3Parser
         tagClass = @tagClass
         io.readExactlyToBuffer fd, 0, 10, (err, buffer) ->
             tag = { header: parseHeader.apply(self, [buffer]) }
-            io.readExactlyToBuffer fd, tag.header.length, tag.header.size, (err, buffer) ->
+            io.readExactlyToBuffer fd, tag.header.length, tag.header.size + 10, (err, buffer) ->
                 if err then return callback err
                 try
                     tag.frames = parseFrames.apply(self, [tag, buffer, 10])
@@ -78,23 +78,16 @@ class ID3Parser
 
     parseFrameSize: (buffer, start) -> buffer.toInt start + 3, 3
 
-    parseFrame: (tag, buffer, start) ->
+    parseFrame: (buffer, start) ->
         return unless start < buffer.length and buffer[start]
         frame =
-            id:         @parseFrameId buffer, start
-            size:       @parseFrameSize buffer, start
-        if frame.id[0] is 'T'
-            start += @frameHeaderSize
-            frame.encoding = if buffer[start] == 0 then 'iso-8859-1' else 'utf16'
-            buffer = buffer[start + 1 .. start + frame.size - 1]
-            decoding = if frame.encoding is 'utf16' then 'utf16' else 'utf8'
-            frame.content = buffer.toString(decoding)
-        frame
+            id:     @parseFrameId buffer, start
+            size:   @parseFrameSize buffer, start
 
     parseFrames: (tag, buffer, start) ->
         frames = {}
         start = start || 0
-        while frame = @parseFrame tag, buffer, start
+        while frame = @parseFrame buffer, start
             frames[frame.id] = frame
             start += frame.size + @frameHeaderSize
         tag.padding = buffer.length - start
@@ -148,6 +141,19 @@ class ID3v2Parser extends ID3Parser
 
     parseHeaderFlags: (header, buffer) ->
         super header, buffer
+
+    parseFrame: (buffer, start) ->
+        return unless start < buffer.length and buffer[start]
+        frame =
+            id:     @parseFrameId buffer, start
+            size:   @parseFrameSize buffer, start
+        if frame?.id[0] is 'T'
+            start += @frameHeaderSize
+            frame.encoding = if buffer[start] == 0 then 'iso-8859-1' else 'utf16'
+            buffer = buffer[start + 1 .. start + frame.size - 1]
+            decoding = if frame.encoding is 'utf16' then 'utf16' else 'utf8'
+            frame.content = buffer.toString(decoding)
+        frame
 
 # ### ID3v3 ###
 
@@ -227,4 +233,20 @@ class ID3v4Parser extends ID3v3Parser
 
     parseFrameSize: (buffer, start) ->
         buffer.toInt start + 4, 4, 'big', 7
+
+    parseFrame: (buffer, start) ->
+        return unless start < buffer.length and buffer[start]
+        frame =
+            id:     @parseFrameId buffer, start
+            size:   @parseFrameSize buffer, start
+        if frame?.id[0] is 'T'
+            start += @frameHeaderSize
+            frame.encoding = switch buffer[start]
+                when 0x00 then 'iso-8859-1'
+                when 0x01, 0x02 then 'utf16'
+                when 0x03 then 'utf8'
+            buffer = buffer[start + 1 .. start + frame.size - 1]
+            decoding = if frame.encoding is 'utf16' then 'utf16' else 'utf8'
+            frame.content = buffer.toString(decoding)
+        frame
 
