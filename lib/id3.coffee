@@ -39,10 +39,14 @@ parseHeaderVersion = (buffer) ->
     revision:   buffer[4]
     version:    'ID3v2.' + buffer[3] + '.' + buffer[4]
 
-parseHeaderFlags = (buffer) ->
-    unsynchronisation:      !!(0x80 & buffer[5])
-    extenderHeader:         !!(0x40 & buffer[5])
-    experimentalIndicator:  !!(0x20 & buffer[5])
+parseHeaderFlags = (header, buffer) ->
+    flags =
+        unsynchronisation:      !!(0x80 & buffer[5])
+        extenderHeader:         !!(0x40 & buffer[5])
+        experimentalIndicator:  !!(0x20 & buffer[5])
+    if header.version.major is 4
+        flags.footer =          !!(0x10 & buffer[5])
+    flags
 
 parseHeaderSize = (buffer) -> buffer.toInt 6, 4, 'big', 7
 
@@ -75,6 +79,14 @@ parseFrameFlags = (buffer, start) ->
 
 parseFrame = (tag, buffer, start) ->
     return unless start < buffer.length
+
+    if buffer[start] is 0
+        count = 1
+        while start++ < buffer.length
+            count++
+        tag.padding = count
+        return
+
     frame =
         id: parseFrameId buffer, start
         size: parseFrameSize tag, buffer, start
