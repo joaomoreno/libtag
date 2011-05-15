@@ -1,12 +1,13 @@
-power2To8 = Math.pow(2,8)
 
-Buffer.prototype.toInt = (start, length, bom) ->
+Buffer.prototype.toInt = (start, length, bom, bits) ->
+    power = if bits then Math.pow(2, bits) else Math.pow(2, 8)
+    
     sum = 0
     factor = 1
     indexes = if bom is 'little' then [start..start + length - 1] else [start + length - 1..start]
     for i in indexes
         sum += this[i] * factor
-        factor *= power2To8
+        factor *= power
     sum
 
 getBOM = (buffer) ->
