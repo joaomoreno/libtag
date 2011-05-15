@@ -17,11 +17,12 @@
 
 <span class="nv">_toString = </span><span class="nx">Buffer</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">toString</span>
 <span class="nv">Buffer.prototype.toString = </span><span class="nf">(encoding, start, end) -&gt;</span>
+    <span class="nv">end = </span><span class="nx">end</span> <span class="o">or</span> <span class="k">this</span><span class="p">.</span><span class="nx">length</span>
     <span class="k">switch</span> <span class="nx">encoding</span>
         <span class="k">when</span> <span class="s1">&#39;utf16&#39;</span>
             <span class="nv">words = </span><span class="p">[]</span>
             <span class="nv">i = </span><span class="nx">start</span> <span class="o">or</span> <span class="mi">0</span>
-            <span class="nv">end = </span><span class="nx">end</span> <span class="o">or</span> <span class="k">this</span><span class="p">.</span><span class="nx">length</span>
+            <span class="k">while</span> <span class="k">this</span><span class="p">[</span><span class="nx">end</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">is</span> <span class="mi">0</span> <span class="k">then</span> <span class="nx">end</span><span class="o">--</span>
             <span class="k">if</span> <span class="nv">bom = </span><span class="nx">getBOM</span> <span class="k">this</span><span class="p">,</span> <span class="nx">i</span> <span class="k">then</span> <span class="nx">i</span> <span class="o">+=</span> <span class="mi">2</span> <span class="k">else</span> <span class="nv">bom = </span><span class="s1">&#39;big&#39;</span>
             <span class="k">while</span> <span class="nx">i</span> <span class="o">&lt;</span> <span class="nx">end</span>
                 <span class="nv">word = </span><span class="k">this</span><span class="p">.</span><span class="nx">toInt</span> <span class="nx">i</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="nx">bom</span>
@@ -32,6 +33,9 @@
                     <span class="nx">words</span><span class="p">.</span><span class="nx">push</span> <span class="mh">0xd800</span> <span class="o">+</span> <span class="p">(</span><span class="nx">word</span> <span class="o">&gt;&gt;</span> <span class="mi">10</span><span class="p">),</span> <span class="mh">0xdc00</span> <span class="o">+</span> <span class="p">(</span><span class="nx">word</span> <span class="o">&amp;</span> <span class="mh">0x3ff</span><span class="p">)</span>
                 <span class="nx">i</span> <span class="o">+=</span> <span class="mi">2</span>
             <span class="nb">String</span><span class="p">.</span><span class="nx">fromCharCode</span><span class="p">.</span><span class="nx">apply</span> <span class="kc">null</span><span class="p">,</span> <span class="nx">words</span>
+        <span class="k">when</span> <span class="s1">&#39;utf8&#39;</span>
+            <span class="k">while</span> <span class="k">this</span><span class="p">[</span><span class="nx">end</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">is</span> <span class="mi">0</span> <span class="k">then</span> <span class="nx">end</span><span class="o">--</span>
+            <span class="nx">_toString</span><span class="p">.</span><span class="nx">apply</span> <span class="k">this</span><span class="p">,</span> <span class="p">[</span><span class="nx">encoding</span><span class="p">,</span> <span class="nx">start</span><span class="p">,</span> <span class="nx">end</span><span class="p">]</span>
         <span class="k">else</span> <span class="nx">_toString</span><span class="p">.</span><span class="nx">apply</span> <span class="k">this</span><span class="p">,</span> <span class="nx">arguments</span>
 
 </pre></div>             </td>           </tr>                </tbody>     </table>   </div> </body> </html> 

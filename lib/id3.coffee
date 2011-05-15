@@ -1,6 +1,26 @@
 io = require './io'
 require './buffer'
 
+# Checking for a valid ID3 header means that
+exports.detectTag = (fd, callback) ->
+    io.readExactlyToBuffer fd, 0, 10, (err, buffer) ->
+        if err then return callback err
+        # the first three bytes are 'ID3',
+        return callback null, null if buffer.toString('utf8', 0, 3) != 'ID3'
+        # no weird flags are set, and
+        return callback null, null if buffer[5] & 0x1f
+        # no weird bits are set.
+        for word in buffer[6..9]
+            return callback null, null if word >= 0x80
+        # So, if everything looks nice, let us give a proper parser back.
+        version = ID3Parser.prototype.parseHeaderVersion(buffer)
+        parser = switch version.major
+            when 2 then new ID3v2Parser
+            when 3 then new ID3v3Parser
+            when 4 then new ID3v4Parser
+            else null
+        return callback null, parser
+
 # ### ID3 ###
 
 class ID3Tag
@@ -207,23 +227,4 @@ class ID3v4Parser extends ID3v3Parser
 
     parseFrameSize: (buffer, start) ->
         buffer.toInt start + 4, 4, 'big', 7
-
-# Checking for a valid ID3 header means that
-exports.detectTag = (fd, callback) ->
-    io.readExactlyToBuffer fd, 0, 10, (err, buffer) ->
-        if err then return callback err
-        # the first three bytes are 'ID3',
-        return callback null, null if buffer.toString('utf8', 0, 3) != 'ID3'
-        # no weird flags are set, and
-        return callback null, null if buffer[5] & 0x1f
-        # no weird bits are set.
-        for word in buffer[6..9]
-            return callback null, null if word >= 0x80
-        version = ID3Parser.prototype.parseHeaderVersion(buffer)
-        parser = switch version.major
-            when 2 then new ID3v2Parser
-            when 3 then new ID3v3Parser
-            when 4 then new ID3v4Parser
-            else null
-        return callback null, parser
 
