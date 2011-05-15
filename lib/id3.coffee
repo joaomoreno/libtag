@@ -27,8 +27,11 @@ exports.readTag = (fd, header, callback) ->
     tag = { header: parseHeader header }
     io.readExactlyToBuffer fd, header.length, tag.header.size, (err, buffer) ->
         if err then return callback err
-        tag.frames = parseFrames tag, buffer
-        callback null, new ID3Tag tag
+        try
+            tag.frames = parseFrames tag, buffer
+            callback null, new ID3Tag tag
+        catch err
+            callback err
 
 # ### Private ###
 
