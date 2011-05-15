@@ -4,9 +4,12 @@ return console.log 'Usage: coffee readTag.coffee audio-file' unless process.argv
 
 count = 2
 callback = (err, tag) ->
-    return console.log err if err
-    console.log(tag.get(field) for field in ['track', 'album', 'artist', 'title'])
+    if err
+        console.log 'ERR', process.argv[count]
+    else
+        console.log tag.get('artist'), tag.get('title')
     if ++count < process.argv.length
         libtag.readTag process.argv[count], callback
+
 libtag.readTag process.argv[count], callback
 
