@@ -18,11 +18,13 @@ getBOM = (buffer) ->
 
 _toString = Buffer.prototype.toString
 Buffer.prototype.toString = (encoding, start, end) ->
+    end = end or this.length
     switch encoding
         when 'utf16'
             words = []
             i = start or 0
-            end = end or this.length
+            if this[end - 1] is 0 then end--
+            console.log this[end]
             if bom = getBOM this, i then i += 2 else bom = 'big'
             while i < end
                 word = this.toInt i, 2, bom
@@ -33,5 +35,8 @@ Buffer.prototype.toString = (encoding, start, end) ->
                     words.push 0xd800 + (word >> 10), 0xdc00 + (word & 0x3ff)
                 i += 2
             String.fromCharCode.apply null, words
+        when 'utf8'
+            if this[end - 1] is 0 then end--
+            _toString.apply this, [encoding, start, end]
         else _toString.apply this, arguments
 
